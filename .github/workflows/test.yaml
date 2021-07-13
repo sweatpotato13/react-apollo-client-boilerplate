@@ -15,10 +15,6 @@ jobs:
           node-version: 14.x
       - run: yarn --frozen-lockfile
       - run: yarn run test:coverage
-      - name: Upload to Coveralls
-        uses: coverallsapp/github-action@master
-        with:
-          github-token: ${{ secrets.SECRET }}
   testInternals:
     runs-on: ubuntu-latest
     steps:
