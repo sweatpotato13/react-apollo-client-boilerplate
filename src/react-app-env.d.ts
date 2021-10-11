@@ -1,4 +1,6 @@
-/// <reference types="react-scripts" />
-
-// To solve the issue: https://github.com/DefinitelyTyped/DefinitelyTyped/issues/31245
-/// <reference types="styled-components/cssprop" />
+declare namespace NodeJS {
+    interface ProcessEnv {
+        NODE_ENV: "development" | "production" | "test";
+        PUBLIC_URL: string;
+    }
+}

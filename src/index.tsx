@@ -1,67 +1,51 @@
-/**
- * index.tsx
- *
- * This is the entry file for the application, only setup and boilerplate
- * code.
- */
+import "react-app-polyfill/ie9";
+import "react-app-polyfill/stable";
 
-import 'react-app-polyfill/ie11';
-import 'react-app-polyfill/stable';
+import React from "react";
+import { hydrate, render } from "react-dom";
+import { Router } from "react-router-dom";
+import { createBrowserHistory } from "history";
+import { I18nextProvider } from "react-i18next";
+import { ApolloProvider } from "@apollo/client";
 
-import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { Provider } from 'react-redux';
-import FontFaceObserver from 'fontfaceobserver';
+import App from "app";
+import { getApolloClient } from "apollo";
+import * as serviceWorker from "./serviceWorker";
+import createI18n from "./i18n/i18n";
+import "./index.css";
+import "antd/dist/antd.css";
+import "./storybook.css";
 
-// Use consistent styling
-import 'sanitize.css/sanitize.css';
+async function bootStrap() {
+    // get the history stack of routes
+    const history = createBrowserHistory();
+    // get the apollo client store
+    const client = await getApolloClient();
+    // get the inital language from the store
+    const i18n = await createI18n(client);
 
-import { App } from 'app';
+    // render
+    const AppBundle = (
+        <ApolloProvider client={client}>
+            <I18nextProvider i18n={i18n}>
+                <Router history={history}>
+                    <App />
+                </Router>
+            </I18nextProvider>
+        </ApolloProvider>
+    );
+    const rootElement = document.getElementById("root");
 
-import { HelmetProvider } from 'react-helmet-async';
+    if (rootElement?.hasChildNodes()) {
+        hydrate(AppBundle, rootElement);
+    } else {
+        render(AppBundle, rootElement);
+    }
 
-import { configureAppStore } from 'store/configureStore';
-
-import { ThemeProvider } from 'styles/theme/ThemeProvider';
-
-import reportWebVitals from 'reportWebVitals';
-
-// Initialize languages
-import './locales/i18n';
-
-// Observe loading of Inter (to remove 'Inter', remove the <link> tag in
-// the index.html file and this observer)
-const openSansObserver = new FontFaceObserver('Inter', {});
-
-// When Inter is loaded, add a font-family using Inter to the body
-openSansObserver.load().then(() => {
-  document.body.classList.add('fontLoaded');
-});
-
-const store = configureAppStore();
-const MOUNT_NODE = document.getElementById('root') as HTMLElement;
-
-ReactDOM.render(
-  <Provider store={store}>
-    <ThemeProvider>
-      <HelmetProvider>
-        <React.StrictMode>
-          <App />
-        </React.StrictMode>
-      </HelmetProvider>
-    </ThemeProvider>
-  </Provider>,
-  MOUNT_NODE,
-);
-
-// Hot reloadable translation json files
-if (module.hot) {
-  module.hot.accept(['./locales/i18n'], () => {
-    // No need to render the App again because i18next works with the hooks
-  });
+    // If you want your app to work offline and load faster, you can change
+    // unregister() to register() below. Note this comes with some pitfalls.
+    // Learn more about service workers: https://bit.ly/CRA-PWA
+    serviceWorker.unregister();
 }
 
-// If you want to start measuring performance in your app, pass a function
-// to log results (for example: reportWebVitals(console.log))
-// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
-reportWebVitals();
+bootStrap();
